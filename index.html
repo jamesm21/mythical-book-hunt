@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The mythical creatures book hunt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Young+Serif&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E8EDF6; --surface:#FFFFFF; --panel:#D8DFEE; --ink:#1B2140; --muted:#55607F;
+  --sun:#F2A900; --sun-ink:#1B2140; --line:#C3CCE0; --focus:#2F5BD3;
+  --serif:"Young Serif", Georgia, "Times New Roman", serif;
+  --sans:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#121831; --surface:#1B2345; --panel:#232C55; --ink:#EDF0FA; --muted:#A3ACCC;
+    --sun:#FFC53D; --sun-ink:#121831; --line:#313C6B; --focus:#8FB0FF;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.45;
+  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:6px}
+
+.wrap{max-width:1320px;margin:0 auto;padding:0 clamp(12px,3vw,32px)}
+
+header.top{display:flex;gap:clamp(14px,3vw,28px);align-items:center;padding:clamp(22px,5vw,48px) 0 clamp(14px,3vw,24px)}
+.sun{width:clamp(56px,10vw,92px);aspect-ratio:1;position:relative;flex:none}
+.sun::before{content:"";position:absolute;inset:0;border-radius:50%;
+  background:repeating-conic-gradient(var(--sun) 0deg 9deg, transparent 9deg 30deg);
+  -webkit-mask:radial-gradient(circle, transparent 0 55%, #000 56%);mask:radial-gradient(circle, transparent 0 55%, #000 56%)}
+.sun::after{content:"";position:absolute;inset:24%;border-radius:50%;background:var(--sun)}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(1.7rem,4.6vw,3rem);line-height:1.08;margin:0 0 .35em;letter-spacing:-.01em}
+.lede{margin:0;color:var(--muted);max-width:62ch;font-size:clamp(.95rem,1.6vw,1.05rem)}
+
+.blocked{margin:0 0 18px;padding:14px 16px;border-radius:10px;background:var(--surface);border:2px solid var(--sun);max-width:70ch}
+.blocked p{margin:0}
+.blocked p + p{margin-top:.4em;color:var(--muted);font-size:.92rem}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.bar .wrap{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding-top:10px;padding-bottom:10px}
+.jump{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-weight:700;font-size:.9rem;
+  padding:7px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
+.jump span{color:var(--muted);font-weight:400}
+.spacer{flex:1}
+.tally{font-size:.85rem;color:var(--muted)}
+.toggle{font:inherit;font-size:.85rem;font-weight:700;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:999px;padding:7px 12px;cursor:pointer}
+.toggle[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+section.group{padding:clamp(22px,4vw,36px) 0 8px}
+.group h2{font-family:var(--serif);font-weight:400;font-size:clamp(1.35rem,3vw,1.9rem);margin:0 0 .25em}
+.group > .wrap > p{margin:0 0 18px;color:var(--muted);max-width:66ch}
+
+.grid{display:grid;gap:clamp(14px,2.2vw,26px) clamp(10px,1.8vw,22px);
+  grid-template-columns:repeat(auto-fill,minmax(clamp(104px,28vw,200px),1fr))}
+.card{all:unset;display:flex;flex-direction:column;gap:6px;cursor:pointer;position:relative;min-width:0}
+.card:focus-visible{outline:3px solid var(--focus);outline-offset:4px;border-radius:10px}
+.frame{position:relative;aspect-ratio:3/4;background:var(--panel);border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.frame img{width:100%;height:100%;object-fit:contain;display:block;opacity:0;transition:opacity .35s ease}
+.frame img.ready{opacity:1}
+.frame .ph{position:absolute;inset:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  font-family:var(--serif);font-size:.85rem;color:var(--muted);gap:6px}
+.frame .ph small{font-family:var(--sans);font-size:.72rem}
+.num{position:absolute;top:-8px;left:-8px;min-width:2.1em;height:2.1em;padding:0 .35em;border-radius:999px;
+  background:var(--sun);color:var(--sun-ink);font-weight:700;font-size:.95rem;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 3px var(--bg);z-index:2}
+.t{font-weight:700;font-size:.88rem;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.y{font-size:.8rem;color:var(--muted);margin-top:-3px}
+.card.is-maybe .frame{box-shadow:0 0 0 3px var(--sun)}
+.card.is-no{opacity:.32}
+.card.is-no .t{text-decoration:line-through}
+body.hide-no .card.is-no{display:none}
+
+footer{padding:40px 0 60px;color:var(--muted);font-size:.85rem}
+footer p{max-width:70ch;margin:0 0 .6em}
+
+/* lightbox */
+dialog#lb{border:0;padding:0;background:var(--surface);color:var(--ink);width:min(1040px,100vw);max-width:100vw;max-height:100dvh;border-radius:14px}
+dialog#lb::backdrop{background:rgba(8,12,28,.72)}
+@media (max-width:720px){dialog#lb{width:100vw;height:100dvh;border-radius:0;margin:0}}
+.lb{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(16px,3vw,32px);padding:clamp(16px,3vw,28px);
+  padding-top:calc(env(safe-area-inset-top,0px) + clamp(16px,3vw,28px));padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px)}
+@media (max-width:720px){.lb{grid-template-columns:1fr}}
+.lb-cover{background:var(--panel);border-radius:8px;display:flex;align-items:center;justify-content:center;min-height:260px;max-height:78dvh}
+.lb-cover a{display:flex;width:100%;height:100%;justify-content:center}
+.lb-cover img{max-width:100%;max-height:78dvh;object-fit:contain;display:block}
+.lb-head{display:flex;gap:12px;align-items:flex-start}
+.lb-head .num{position:static;box-shadow:none;flex:none;margin-top:4px}
+.lb h3{font-family:var(--serif);font-weight:400;font-size:clamp(1.35rem,3vw,1.8rem);line-height:1.12;margin:0}
+.lb .sub{margin:.3em 0 0;color:var(--muted)}
+.lb .by{margin:.6em 0 0}
+.lb .why{margin:1em 0 0;max-width:60ch}
+.lb .note{margin:.6em 0 0;font-size:.85rem;color:var(--muted)}
+.marks{display:flex;gap:8px;margin:16px 0 0;flex-wrap:wrap}
+.mark{font:inherit;font-weight:700;font-size:.9rem;padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.mark[aria-pressed="true"][data-m="maybe"]{background:var(--sun);color:var(--sun-ink);border-color:var(--sun)}
+.mark[aria-pressed="true"][data-m="no"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.lb h4{font-size:.95rem;margin:22px 0 8px}
+.eds{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;min-height:20px}
+.eds button{all:unset;cursor:pointer;flex:none;width:64px;aspect-ratio:3/4;background:var(--panel);border-radius:4px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.eds button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.eds img{width:100%;height:100%;object-fit:contain}
+.eds .empty{font-size:.85rem;color:var(--muted)}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.links a{font-size:.88rem;font-weight:700;text-decoration:none;padding:8px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--line)}
+.lb-nav{position:sticky;bottom:0;display:flex;gap:8px;justify-content:space-between;align-items:center;padding:10px clamp(16px,3vw,28px);
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 10px);background:var(--surface);border-top:1px solid var(--line)}
+.lb-nav button{font:inherit;font-weight:700;padding:9px 14px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+@media (prefers-reduced-motion:reduce){.frame img{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="sun" aria-hidden="true"></div>
+    <div>
+      <h1>The mythical creatures book hunt</h1>
+      <p class="lede">Tap any cover for a bigger view, other editions and links to look inside. Mark covers as you go to narrow things down.</p>
+    </div>
+  </header>
+  <div class="blocked" id="blocked" hidden role="status">
+    <p><strong>Covers can’t load in this preview.</strong> It blocks pictures from other websites, so every cover shows as missing.</p>
+    <p>Download the file and open it in Safari, Chrome or Edge, ideally on a computer. The covers will appear there.</p>
+  </div>
+</div>
+
+<nav class="bar" aria-label="Groups">
+  <div class="wrap">
+    <a class="jump" href="#A">Strongest matches <span id="cA"></span></a>
+    <a class="jump" href="#B">Right style <span id="cB"></span></a>
+    <a class="jump" href="#C">Wider net <span id="cC"></span></a>
+    <span class="spacer"></span>
+    <span class="tally" id="tally" aria-live="polite"></span>
+    <button class="toggle" id="hideNo" aria-pressed="false">Hide ‘not it’</button>
+  </div>
+</nav>
+
+<main>
+  <section class="group" id="A">
+    <div class="wrap">
+      <h2>Strongest matches</h2>
+      <p>Several of your clues line up here, whether that’s the contents, the art style or the sun-and-sky theme.</p>
+      <div class="grid" data-g="A"></div>
+    </div>
+  </section>
+  <section class="group" id="B">
+    <div class="wrap">
+      <h2>Right style</h2>
+      <p>Big, bright, world-spanning collections whose covers might ring a bell. Contents not yet checked against your clues.</p>
+      <div class="grid" data-g="B"></div>
+    </div>
+  </section>
+  <section class="group" id="C">
+    <div class="wrap">
+      <h2>Wider net</h2>
+      <p>Other illustrated children’s books on world myths, sky lore and magical creatures.</p>
+      <div class="grid" data-g="C"></div>
+    </div>
+  </section>
+</main>
+
+<div class="wrap">
+  <footer>
+    <p>Covers load from Open Library, Google Books and booksellers. A cover marked as matched by title may show a different edition from the one in the library.</p>
+    <p>Already ruled out and left off: Dragon World, The Dragon Atlas, Dragon Myths and Legends, Legendary Creatures, The Bedtime Book of Magical Creatures, The Book of Mythical Beasts and Magical Creatures, Mythopedia, Myth Atlas, Beasts of the Ancient World, Illustrated Myths from Around the World, Gods, Goddesses and Heroes, Myths and Legends of the World, Beneath the Moon.</p>
+  </footer>
+</div>
+
+<dialog id="lb" aria-labelledby="lbTitle">
+  <div class="lb">
+    <div class="lb-cover"><a id="lbCoverLink" target="_blank" rel="noopener"><img id="lbImg" alt=""></a></div>
+    <div>
+      <div class="lb-head"><span class="num" id="lbNum"></span><h3 id="lbTitle"></h3></div>
+      <p class="sub" id="lbSub"></p>
+      <p class="by" id="lbBy"></p>
+      <p class="why" id="lbWhy"></p>
+      <p class="note" id="lbNote"></p>
+      <div class="marks">
+        <button class="mark" data-m="maybe" aria-pressed="false">Looks familiar</button>
+        <button class="mark" data-m="no" aria-pressed="false">Not it</button>
+      </div>
+      <h4>Other editions and covers</h4>
+      <div class="eds" id="lbEds"></div>
+      <h4>Look inside and check the library</h4>
+      <div class="links" id="lbLinks"></div>
+    </div>
+  </div>
+  <div class="lb-nav">
+    <button id="lbPrev" aria-label="Previous book">Previous</button>
+    <button id="lbClose">Close</button>
+    <button id="lbNext" aria-label="Next book">Next</button>
+  </div>
+</dialog>
+
+<script>
+/* g: group, t: title, s: subtitle, by: credits, y: year (null = fill from catalogue), isbn: [preferred, alternatives],
+   look: Google Books queries for books without an ISBN here, ol: Open Library title/author fallback, why: reason it is here */
+const BOOKS = [
+  // A: strongest
+  {g:'A', t:'Mythical Science', by:'Rebecca Lewis-Oakes, illustrated by Max Rambaldi', y:2022, isbn:['9780755501144'],
+   why:'Confirmed: myths from around the world about why the Sun rises, where rainbows come from, thunder and the sky, each paired with the science. Tagged with Aboriginal, rainbow and sun themes. Large 29cm hardback in bold graphic colour. Not yet checked for Bakunawa or leprechauns.'},
+  {g:'A', t:'Astrologica', s:'An Encyclopedia of Myths and Legends from the Planets, Stars and Skies', by:'Suki Ferguson, illustrated by Camelia Pham', y:2025, isbn:['9780711293595','9780711293601'],
+   why:'Confirmed: Sun, Moon, planet and star myths from around the world, including ancient China, the Chinese zodiac and sky lore from Australia. Big, bold, graphic art. Not yet checked for Bakunawa or leprechauns.'},
+  {g:'A', t:'Tales of the Night Sky', s:'Stories of Stars from Around the World', by:'Corinna Keefe, illustrated by Gaby Verdooren', y:2024, isbn:['9781398844438'],
+   why:'Confirmed: 15 sky folk tales, including an Estonian Northern Lights story and the Chinese Weaver Girl and Herdsman. Hardback with gold cover details.'},
+  {g:'A', t:'Monsterlogica', s:'A Menagerie of Monsters, Beasts and Magical Beings', by:'Martin Maudsley, illustrated by Victoria Topping', y:2026, isbn:['9781836005926','9781836005933'],
+   why:'Confirmed: 50 creatures, including Eastern and Western dragons, the Chinese Longma, and two Filipino creatures, the Sigbin and Tikbalang. Bakunawa, the Rainbow Serpent and leprechauns are not in the published contents.'},
+  {g:'A', t:'Night Sky', by:'Rola Shaw, illustrated by Lara Hawthorne', y:2021, isbn:['9781405297783'],
+   why:'Confirmed: a large-format tour of the night sky and the stories different cultures tell about it. Same publisher and size as Mythical Science. Colourful, patterned art.'},
+  {g:'A', t:'Magical Creatures and Mythical Beasts', by:'Emily Hawkins, illustrated by Victo Ngai', y:2020, isbn:['9781916180574','9781419748394'],
+   why:'Confirmed: 30+ creatures from around the world, with a torch that reveals hidden pictures. Victo Ngai’s art is dense, decorative and full of pattern.'},
+  {g:'A', t:'Fabulous Creatures', s:'Legendary Animals from Around the World', by:'Cornelia Funke, illustrated by Ruby Warnecke', y:2026, isbn:['9780735845916'],
+   why:'Confirmed: 19 creatures from around the world in bright, patterned, full-page art. Aimed at ages 4 to 8.'},
+  {g:'A', t:'Myths and Legends', s:'Tales from Around the World', by:'Samantha Newman, illustrated by Fiona Sansom and Graham Kennedy', y:2025, isbn:['9781398857254'],
+   why:'Confirmed: 50 boldly illustrated world myths, including the Chinese stories of Nuwa and Pangu. A different book from the Alli Brydon title you’ve ruled out.'},
+  {g:'A', t:'The Great Book of Monster Legends', s:'Stories and Myths from Around the World', by:'Tea Orsi, illustrated by Anna Lang', y:2024, isbn:['9781641243469'],
+   why:'Confirmed: mythical creatures from all over the world. Listed among the most beautiful children’s books of 2024.'},
+  {g:'A', t:'The Great Book of Legendary Creatures', by:'Illustrated by Anna Lang', y:null, isbn:['9788854422223'],
+   why:'Confirmed: magical beings from several continents and folk traditions. Companion to The Great Book of Monster Legends.'},
+  {g:'A', t:'Believe', by:'Catherine Doyle, illustrated by Freya Hartas', y:null, isbn:['9781915569981'],
+   why:'Confirmed: the origins of magical creatures and mythical beasts, in a large 29cm hardback from Magic Cat.'},
+  {g:'A', t:'The Atlas of Monsters', s:'Mythical Creatures from Around the World', by:'Sandra Lawrence, illustrated by Stuart Hill', y:2017,
+   look:['intitle:"Atlas of Monsters" inauthor:Lawrence','"Atlas of Monsters" Sandra Lawrence'], ol:{title:'The Atlas of Monsters', author:'Sandra Lawrence'},
+   why:'Confirmed: mythical creatures from around the world, arranged by map.'},
+  {g:'A', t:'The Magnificent Book of Dragons', by:'Stella Caldwell, illustrated by Gonzalo Kenny', y:2021,
+   look:['intitle:"Magnificent Book of Dragons"'], ol:{title:'The Magnificent Book of Dragons', author:'Stella Caldwell'},
+   why:'Confirmed: 36 dragons from many cultures, each on its own large spread, from Typhon to Quetzalcoatl.'},
+  {g:'A', t:'Star Stories', s:'Constellation Tales from Around the World', by:'Anita Ganeri, illustrated by Andy Wilx', y:null,
+   look:['intitle:"Star Stories" inauthor:Ganeri'], ol:{title:'Star Stories', author:'Anita Ganeri'},
+   why:'Confirmed: stories about the Sun, Moon, stars and Milky Way from every continent.'},
+  {g:'A', t:'An Illustrated Treasury of Dragon Tales', by:'Theresa Breslin', y:null, isbn:['9781782509103'],
+   why:'Confirmed: 10 dragon stories from around the world, including Mexican and Japanese dragons.'},
+
+  // B: right style
+  {g:'B', t:'Goddesses and Heroines', s:'Women of Myth and Legend', by:'Xanthe Gresham-Knight, illustrated by Alice Pattullo', y:2020,
+   look:['intitle:"Goddesses and Heroines" inauthor:Gresham-Knight','intitle:"Goddesses and Heroines" Pattullo'], ol:{title:'Goddesses and Heroines', author:'Gresham-Knight'},
+   why:'World myths in bold, flat, heavily patterned print-style art.'},
+  {g:'B', t:'A World Full of Animal Stories', by:'Angela McAllister, illustrated by Aitch', y:null,
+   look:['intitle:"A World Full of Animal Stories"'], ol:{title:'A World Full of Animal Stories', author:'McAllister'},
+   why:'50 folk tales from around the world. Aitch’s art is bright, decorative and patterned.'},
+  {g:'B', t:'A World Full of Spooky Stories', by:'Angela McAllister, illustrated by Madalina Andronic', y:null,
+   look:['intitle:"World Full of Spooky Stories"','intitle:"World of Spooky Stories" McAllister'], ol:{title:'A World Full of Spooky Stories', author:'McAllister'},
+   why:'50 spooky folk tales from around the world, many featuring magical creatures.'},
+  {g:'B', t:'A World Full of Nature Stories', by:'Angela McAllister, illustrated by Hannah Bess Ross', y:null,
+   look:['intitle:"World Full of Nature Stories"'], ol:{title:'A World Full of Nature Stories', author:'McAllister'},
+   why:'Folk tales about the natural world, sun and sky included, from many cultures.'},
+  {g:'B', t:'A Bedtime Full of Stories', s:'50 Folk Tales and Legends from Around the World', by:'Angela McAllister, illustrated by Anna Shepeta', y:2021,
+   look:['intitle:"A Bedtime Full of Stories"'], ol:{title:'A Bedtime Full of Stories', author:'McAllister'},
+   why:'50 world folk tales and legends, award-recognised for its folklore.'},
+  {g:'B', t:'Spooky Stories of the World', by:'Lonely Planet Kids', y:null,
+   look:['intitle:"Spooky Stories of the World"'], ol:{title:'Spooky Stories of the World'},
+   why:'Companion to the Lonely Planet myths book you’ve ruled out. Different cover and contents.'},
+  {g:'B', t:'A Treasury of Traditional Tales', s:'20 Spellbinding Stories from Across the Continents', by:'Lonely Planet Kids', y:2024, isbn:['9781837583010'],
+   look:['intitle:"A Treasury of Traditional Tales" Lonely Planet'],
+   why:'World tales including magical elves and other folk creatures.'},
+  {g:'B', t:'Gods and Heroes', s:'Mythology Around the World', by:'Korwin Briggs', y:2018,
+   look:['intitle:"Gods and Heroes" inauthor:Briggs'], ol:{title:'Gods and Heroes', author:'Korwin Briggs'},
+   why:'Cartoon-style world mythology with lots of colourful characters on each page.'},
+  {g:'B', t:'Atlas of Mythical Journeys', by:'Wide Eyed Editions', y:2025,
+   look:['intitle:"Atlas of Mythical Journeys"'], ol:{title:'Atlas of Mythical Journeys'},
+   why:'World myths mapped as journeys, from the same publisher as Astrologica.'},
+  {g:'B', t:'Stories from the Sea', s:'Tales of Adventure from Around the World', by:'Illustrated by Khoa Le', y:null, isbn:['9781398857506'],
+   why:'Same series and art style as the dragon book you looked at; sea creatures and spirits from many cultures.'},
+  {g:'B', t:'Christmas Stories from Around the World', s:'Winter Myths and Festive Folk Tales', by:'Arcturus', y:null, isbn:['9781398874800'],
+   why:'Winter myths from many cultures, which often include Northern Lights stories.'},
+  {g:'B', t:'Epic Myths for Fearless Girls', by:'Illustrated by Khoa Le', y:2022,
+   look:['intitle:"Epic Myths for Fearless Girls"'], ol:{title:'Epic Myths for Fearless Girls'},
+   why:'15 world myths with bold, patterned art by Khoa Le.'},
+  {g:'B', t:'Folk Tales for Fearless Girls', by:'Samantha Newman, illustrated by Khoa Le', y:null, isbn:['9781398822696'],
+   why:'15 world folk tales with bold, patterned art by Khoa Le.'},
+  {g:'B', t:'Monsters and Legends', by:'Davide Cali, illustrated by Gabriella Giandelli', y:null,
+   look:['intitle:"Monsters and Legends" inauthor:Cali'], ol:{title:'Monsters and Legends', author:'Davide Cali'},
+   why:'World legends and the truth behind them, from Flying Eye Books.'},
+  {g:'B', t:'Sun, Moon and Stars', by:'Mary Hoffman, illustrated by Jane Ray', y:1998, isbn:['9781858814131','9780525460046'],
+   why:'Older than you remember, but a world sky-myth collection with the Sun on the cover, so worth a glance.'},
+  {g:'B', t:'Lore of the Wild', s:'Folklore and Wisdom from Nature', by:'Claire Cock-Starkey', y:2021,
+   look:['intitle:"Lore of the Wild" inauthor:Cock-Starkey'], ol:{title:'Lore of the Wild', author:'Cock-Starkey'},
+   why:'Nature folklore from around the world, including weather and sky lore.'},
+  {g:'B', t:'Monsters and Mythical Creatures from around the World', by:'Heather Frigiola, illustrated by Sky Cybele', y:null,
+   look:['intitle:"Monsters and Mythical Creatures from around the World"'], ol:{title:'Monsters and Mythical Creatures from around the World', author:'Frigiola'},
+   why:'240 creatures by region, with brightly coloured illustrations.'},
+  {g:'B', t:'Fantastic Folklore for Kids', s:'Cryptids, Monsters, and Mythical Creatures from Around the World', by:'Frank Lesser, illustrated by Charli Vince', y:2026, isbn:['9798217331093'],
+   look:['intitle:"Fantastic Folklore for Kids"'],
+   why:'World folklore creatures with stories and profiles.'},
+  {g:'B', t:'The Ultimate Book of Mythical Creatures', by:'Aurore Meyer', y:null,
+   look:['intitle:"Ultimate Book of Mythical Creatures"'], ol:{title:'The Ultimate Book of Mythical Creatures'},
+   why:'Large-format guide to creatures from around the world.'},
+  {g:'B', t:'Mythical Creatures (Shine-a-Light)', by:'Shine-a-Light series', y:null,
+   look:['Shine-a-Light Mythical Creatures','intitle:"Mythical Creatures" shine a light'], ol:{title:'Mythical Creatures shine a light'},
+   why:'Hold a torch behind the page to reveal hidden creatures.'},
+  {g:'B', t:'The Book of Dragons', s:'An Encyclopedia of These Mythical Creatures and Their Stories', by:'White Star Kids', y:null,
+   look:['intitle:"The Book of Dragons" encyclopedia mythical creatures stories'], ol:{title:'The Book of Dragons encyclopedia'},
+   why:'Dragons from many cultures with their stories.'},
+
+  // C: wider net
+  {g:'C', t:'Supernatural Creatures', s:'Mythical and Sacred Creatures from Around the World', by:'DK', y:2024, isbn:['9780744098792'],
+   why:'100+ creatures from every corner of the globe, aimed at older children.'},
+  {g:'C', t:'Children’s Book of Mythical Beasts and Magical Monsters', by:'DK', y:null,
+   look:['intitle:"Mythical Beasts and Magical Monsters"'], ol:{title:'Mythical Beasts and Magical Monsters'},
+   why:'Illustrated guide to creatures from world mythology.'},
+  {g:'C', t:'My Encyclopedia of Very Important Myths and Legends', by:'DK', y:null,
+   look:['intitle:"Very Important Myths and Legends"'], ol:{title:'My Encyclopedia of Very Important Myths and Legends'},
+   why:'World myths, heroes and lesser-known magical creatures for younger readers.'},
+  {g:'C', t:'Myths, Legends, and Sacred Stories', s:'A Visual Encyclopedia', by:'DK', y:2017,
+   look:['intitle:"Myths, Legends, and Sacred Stories"'], ol:{title:'Myths, Legends, and Sacred Stories'},
+   why:'A large world mythology reference with lots of illustration.'},
+  {g:'C', t:'Chasing the Moon', s:'A Captivating Journey Through Its Magical Phases', by:'Wide Eyed Editions', y:null,
+   look:['intitle:"Chasing the Moon" magical phases','intitle:"Chasing the Moon" Wide Eyed'],
+   why:'A Moon book from the Astrologica publisher, which may include Moon myths such as Bakunawa.'},
+  {g:'C', t:'A Natural History of Magical Beasts', by:'Illustrated by Jessica Roux', y:null,
+   look:['intitle:"A Natural History of Magical Beasts"'], ol:{title:'A Natural History of Magical Beasts'},
+   why:'Illustrated field guide to creatures from world folklore.'},
+  {g:'C', t:'Mythical Beasts', by:'Stephanie Warren Drimmer', y:null,
+   look:['intitle:"Mythical Beasts" inauthor:Drimmer'], ol:{title:'Mythical Beasts', author:'Drimmer'},
+   why:'National Geographic Kids look at creatures from world myths.'},
+  {g:'C', t:'Encyclopedia Mythologica: Dragons and Monsters', by:'Matthew Reinhart and Robert Sabuda', y:2011,
+   look:['intitle:"Encyclopedia Mythologica" dragons monsters'], ol:{title:'Encyclopedia Mythologica Dragons and Monsters', author:'Sabuda'},
+   why:'Pop-up book of dragons and monsters from many cultures.'},
+  {g:'C', t:'Encyclopedia Mythologica: Fairies and Magical Creatures', by:'Matthew Reinhart and Robert Sabuda', y:2008,
+   look:['intitle:"Encyclopedia Mythologica" fairies'], ol:{title:'Encyclopedia Mythologica Fairies and Magical Creatures', author:'Sabuda'},
+   why:'Pop-up book of fairies and little folk, which may include leprechauns.'},
+  {g:'C', t:'Encyclopedia Mythologica: Gods and Heroes', by:'Matthew Reinhart and Robert Sabuda', y:2010,
+   look:['intitle:"Encyclopedia Mythologica" gods heroes'], ol:{title:'Encyclopedia Mythologica Gods and Heroes', author:'Sabuda'},
+   why:'Pop-up world mythology, including Chinese and other Asian myths.'},
+  {g:'C', t:'Myths of China', by:'Xiaobing Wang, illustrated by Katie Ponder', y:2024,
+   look:['intitle:"Myths of China" inauthor:Wang'], ol:{title:'Myths of China', author:'Xiaobing Wang'},
+   why:'Chinese myths only, but packed with dragons and magical creatures if Chinese pages dominate your memory.'},
+  {g:'C', t:'East Asian Folktales, Myths and Legends', by:'Eva Wong Nava', y:2024,
+   look:['intitle:"East Asian Folktales" Nava'], ol:{title:'East Asian Folktales Myths and Legends', author:'Eva Wong Nava'},
+   why:'Folk tales and creatures from China and its neighbours.'},
+  {g:'C', t:'The Truth About Dragons', by:'Julie Leung, illustrated by Hanna Cha', y:null,
+   look:['intitle:"The Truth About Dragons" inauthor:Leung'], ol:{title:'The Truth About Dragons', author:'Julie Leung'},
+   why:'Picture book comparing Eastern and Western dragons.'},
+  {g:'C', t:'The Barefoot Book of Earth Tales', by:'Dawn Casey, illustrated by Anne Wilson', y:null,
+   look:['intitle:"Barefoot Book of Earth Tales"'], ol:{title:'The Barefoot Book of Earth Tales', author:'Dawn Casey'},
+   why:'World folk tales in bold, collage-style patterned art.'}
+];
+
+const LS_KEY = 'mythhunt-marks-v1';
+let marks = {};
+try { marks = JSON.parse(localStorage.getItem(LS_KEY) || '{}') || {}; } catch (e) { marks = {}; }
+function saveMarks(){ try { localStorage.setItem(LS_KEY, JSON.stringify(marks)); } catch (e) {} }
+
+const state = BOOKS.map(() => ({src:null, year:null, gbId:null, isbn:null, byTitle:false, started:false, done:false}));
+const cards = [];
+
+/* small request queue so we stay polite to the catalogues */
+const queue = []; let active = 0; const MAX = 3;
+function enqueue(fn){
+  return new Promise(resolve => {
+    queue.push(() => Promise.resolve().then(fn).then(resolve, () => resolve(null)));
+    pump();
+  });
+}
+function pump(){
+  while (active < MAX && queue.length){
+    const job = queue.shift(); active++;
+    job().finally(() => { active--; pump(); });
+  }
+}
+
+function loadImage(url){
+  return new Promise(resolve => {
+    const img = new Image();
+    img.referrerPolicy = 'no-referrer';
+    let settled = false;
+    const done = ok => { if (!settled){ settled = true; resolve(ok); } };
+    img.onload = () => done(img.naturalWidth > 60 && img.naturalHeight > 60);
+    img.onerror = () => done(false);
+    setTimeout(() => done(false), 12000);
+    img.src = url;
+  });
+}
+const isbnSources = i => [
+  `https://covers.openlibrary.org/b/isbn/${i}-L.jpg?default=false`,
+  `https://cdn.theportobellobookshop.com/img/${i}.jpg`,
+  `https://images.booksense.com/images/${i.slice(10)}/${i.slice(7,10)}/${i}.jpg`,
+  `https://images-us.bookshop.org/ingram/${i}.jpg`
+];
+async function gbSearch(q){
+  try {
+    const r = await fetch('https://www.googleapis.com/books/v1/volumes?maxResults=8&printType=books&q=' + encodeURIComponent(q));
+    if (!r.ok) return [];
+    const j = await r.json();
+    return j.items || [];
+  } catch (e) { return []; }
+}
+function gbCoverUrls(item){
+  const links = item && item.volumeInfo && item.volumeInfo.imageLinks;
+  if (!links) return [];
+  const thumb = (links.thumbnail || links.smallThumbnail || '').replace('http:', 'https:').replace('&edge=curl', '');
+  return [`https://books.google.com/books/publisher/content/images/frontcover/${item.id}?fife=w600-h900&source=gbs_api`, thumb].filter(Boolean);
+}
+async function olSearch(title, author){
+  try {
+    let u = 'https://openlibrary.org/search.json?limit=8&fields=key,title,author_name,cover_i,first_publish_year&title=' + encodeURIComponent(title);
+    if (author) u += '&author=' + encodeURIComponent(author);
+    const r = await fetch(u);
+    if (!r.ok) return [];
+    const j = await r.json();
+    return j.docs || [];
+  } catch (e) { return []; }
+}
+function leadAuthor(b){
+  if (b.ol && b.ol.author) return b.ol.author;
+  const first = (b.by || '').split(',')[0].trim();
+  if (/^(illustrated by|dk$|arcturus|wide eyed|white star|lonely planet|shine-a-light)/i.test(first)) return '';
+  return first.split(' and ')[0];
+}
+
+async function resolveBook(i){
+  const b = BOOKS[i], s = state[i];
+  if (s.started) return; s.started = true;
+  if (b.isbn){
+    s.isbn = b.isbn[0];
+    outer: for (const code of b.isbn){
+      for (const u of isbnSources(code)){
+        if (await loadImage(u)){ s.src = u; break outer; }
+      }
+    }
+  }
+  if (!s.src || !b.y){
+    const queries = [];
+    if (b.isbn) b.isbn.forEach(code => queries.push('isbn:' + code));
+    if (b.look) queries.push(...b.look);
+    for (const q of queries){
+      const items = await gbSearch(q);
+      const item = items.find(x => x.volumeInfo && x.volumeInfo.imageLinks) || items[0];
+      if (!item) continue;
+      const vi = item.volumeInfo || {};
+      if (!s.gbId) s.gbId = item.id;
+      if (!b.y && !s.year && vi.publishedDate) s.year = vi.publishedDate.slice(0, 4);
+      if (!s.isbn && vi.industryIdentifiers){
+        const id13 = vi.industryIdentifiers.find(x => x.type === 'ISBN_13');
+        if (id13) s.isbn = id13.identifier;
+      }
+      if (!s.src){
+        for (const u of gbCoverUrls(item)){
+          if (await loadImage(u)){ s.src = u; s.byTitle = !q.startsWith('isbn:'); break; }
+        }
+      }
+      if (s.src) break;
+    }
+  }
+  if (!s.src){
+    const title = (b.ol && b.ol.title) || b.t;
+    const docs = await olSearch(title, leadAuthor(b));
+    const d = docs.find(x => x.cover_i);
+    if (d){
+      const u = `https://covers.openlibrary.org/b/id/${d.cover_i}-L.jpg`;
+      if (await loadImage(u)){ s.src = u; s.byTitle = true; }
+      if (!b.y && !s.year && d.first_publish_year) s.year = String(d.first_publish_year);
+    }
+  }
+  s.done = true;
+  paintCard(i);
+}
+
+function yearOf(i){ return BOOKS[i].y || state[i].year || ''; }
+
+function paintCard(i){
+  const card = cards[i]; if (!card) return;
+  const s = state[i], b = BOOKS[i];
+  const frame = card.querySelector('.frame');
+  const ph = frame.querySelector('.ph');
+  const y = card.querySelector('.y');
+  y.textContent = yearOf(i);
+  if (s.src){
+    let img = frame.querySelector('img');
+    if (!img){
+      img = document.createElement('img');
+      img.alt = '';
+      img.referrerPolicy = 'no-referrer';
+      img.decoding = 'async';
+      frame.prepend(img);
+    }
+    img.onload = () => { img.classList.add('ready'); if (ph) ph.hidden = true; };
+    img.src = s.src;
+  } else if (s.done && ph){
+    ph.innerHTML = '';
+    const t = document.createElement('span'); t.textContent = b.t;
+    const sm = document.createElement('small'); sm.textContent = blocked ? 'Can’t load covers here' : 'No cover found. Tap for links.';
+    ph.append(t, sm);
+  }
+  applyMark(i);
+}
+
+function applyMark(i){
+  const card = cards[i]; if (!card) return;
+  card.classList.toggle('is-maybe', marks[i + 1] === 'maybe');
+  card.classList.toggle('is-no', marks[i + 1] === 'no');
+}
+function updateTally(){
+  const vals = Object.values(marks);
+  const m = vals.filter(v => v === 'maybe').length, n = vals.filter(v => v === 'no').length;
+  document.getElementById('tally').textContent = (m || n) ? `${m} familiar, ${n} not it` : '';
+}
+
+/* build grid */
+const counts = {A:0, B:0, C:0};
+BOOKS.forEach((b, i) => {
+  counts[b.g]++;
+  const card = document.createElement('button');
+  card.className = 'card';
+  card.type = 'button';
+  card.setAttribute('aria-label', `${i + 1}: ${b.t}`);
+  card.innerHTML = `<span class="frame"><span class="ph"><span></span></span><span class="num">${i + 1}</span></span><span class="t"></span><span class="y"></span>`;
+  card.querySelector('.ph span').textContent = b.t;
+  card.querySelector('.t').textContent = b.t;
+  card.querySelector('.y').textContent = b.y || '';
+  card.addEventListener('click', () => openLb(i));
+  document.querySelector(`.grid[data-g="${b.g}"]`).appendChild(card);
+  cards[i] = card;
+  applyMark(i);
+});
+['A','B','C'].forEach(g => document.getElementById('c' + g).textContent = counts[g]);
+updateTally();
+
+let blocked = false;
+async function probe(){
+  const tests = await Promise.all([
+    loadImage('https://covers.openlibrary.org/b/isbn/9781405297783-M.jpg'),
+    loadImage('https://books.google.com/books/content?vid=ISBN9781405297783&printsec=frontcover&img=1&zoom=1'),
+    fetch('https://openlibrary.org/search.json?q=night+sky&limit=1&fields=key').then(r => r.ok, () => false)
+  ]);
+  return tests.some(Boolean);
+}
+const io = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting){
+      const i = cards.indexOf(e.target);
+      io.unobserve(e.target);
+      enqueue(() => resolveBook(i));
+    }
+  });
+}, {rootMargin:'800px 0px'}) : null;
+probe().then(ok => {
+  if (!ok){
+    blocked = true;
+    document.getElementById('blocked').hidden = false;
+    BOOKS.forEach((b, i) => { state[i].started = true; state[i].done = true; paintCard(i); });
+    return;
+  }
+  cards.forEach((c, i) => io ? io.observe(c) : enqueue(() => resolveBook(i)));
+});
+
+/* hide toggle */
+const hideBtn = document.getElementById('hideNo');
+hideBtn.addEventListener('click', () => {
+  const on = hideBtn.getAttribute('aria-pressed') !== 'true';
+  hideBtn.setAttribute('aria-pressed', String(on));
+  document.body.classList.toggle('hide-no', on);
+});
+
+/* lightbox */
+const lb = document.getElementById('lb');
+let current = 0;
+function el(id){ return document.getElementById(id); }
+function linkBtn(label, href){
+  const a = document.createElement('a'); a.textContent = label; a.href = href; a.target = '_blank'; a.rel = 'noopener'; return a;
+}
+async function openLb(i){
+  current = i;
+  const b = BOOKS[i], s = state[i];
+  if (!s.started) enqueue(() => resolveBook(i));
+  el('lbNum').textContent = i + 1;
+  el('lbTitle').textContent = b.t;
+  el('lbSub').textContent = b.s || '';
+  el('lbSub').hidden = !b.s;
+  el('lbBy').textContent = [b.by, yearOf(i)].filter(Boolean).join(', ');
+  el('lbWhy').textContent = b.why;
+  el('lbNote').textContent = s.byTitle ? 'Cover matched by title, so it may show a different edition.' : '';
+  const img = el('lbImg');
+  img.removeAttribute('src');
+  img.alt = `Cover of ${b.t}`;
+  if (s.src) img.src = s.src;
+  const isbn = s.isbn || (b.isbn && b.isbn[0]) || '';
+  const gbLink = s.gbId ? `https://books.google.co.uk/books?id=${s.gbId}` :
+    isbn ? `https://books.google.co.uk/books?vid=ISBN${isbn}` :
+    `https://www.google.co.uk/search?tbm=bks&q=${encodeURIComponent('"' + b.t + '"')}`;
+  el('lbCoverLink').href = gbLink;
+  const illus = (b.by || '').match(/illustrated by ([^,]+)/i);
+  const key = isbn || b.t;
+  const links = el('lbLinks'); links.innerHTML = '';
+  links.append(
+    linkBtn('Look inside on Google Books', gbLink),
+    linkBtn('Find inside pages', `https://www.google.co.uk/search?tbm=isch&q=${encodeURIComponent('"' + b.t + '" ' + (illus ? illus[1] : '') + ' spread')}`),
+    linkBtn('Check LibrariesWest', `https://librarieswest.ent.sirsidynix.net.uk/client/en_GB/default/search/results?qu=${encodeURIComponent(key)}`),
+    linkBtn('Open Library', isbn ? `https://openlibrary.org/isbn/${isbn}` : `https://openlibrary.org/search?q=${encodeURIComponent(b.t)}`),
+    linkBtn('Bookshop.org', `https://uk.bookshop.org/search?keywords=${encodeURIComponent(key)}`)
+  );
+  document.querySelectorAll('.mark').forEach(m => m.setAttribute('aria-pressed', String(marks[i + 1] === m.dataset.m)));
+  if (!lb.open) lb.showModal();
+  lb.scrollTop = 0;
+  loadEditions(i);
+}
+async function loadEditions(i){
+  const box = el('lbEds');
+  box.innerHTML = '<span class="empty">Looking for other editions…</span>';
+  const b = BOOKS[i];
+  const seen = new Set(); const urls = [];
+  const title = (b.ol && b.ol.title) || b.t;
+  const docs = await olSearch(title, leadAuthor(b));
+  const work = docs.find(d => d.key);
+  if (work){
+    try {
+      const r = await fetch(`https://openlibrary.org${work.key}/editions.json?limit=50`);
+      if (r.ok){
+        const j = await r.json();
+        (j.entries || []).forEach(e => {
+          const c = e.covers && e.covers.find(x => x > 0);
+          if (c && !seen.has('ol' + c)){ seen.add('ol' + c); urls.push(`https://covers.openlibrary.org/b/id/${c}-L.jpg`); }
+        });
+      }
+    } catch (e) {}
+  }
+  const author = leadAuthor(b);
+  const items = await gbSearch(`intitle:"${b.t}"` + (author ? ` inauthor:"${author.split(' ').pop()}"` : ''));
+  items.slice(0, 6).forEach(it => {
+    const u = gbCoverUrls(it)[1];
+    if (u && !seen.has('gb' + it.id)){ seen.add('gb' + it.id); urls.push(u.replace('zoom=1', 'zoom=2')); }
+  });
+  if (current !== i) return;
+  box.innerHTML = '';
+  if (!urls.length){ box.innerHTML = '<span class="empty">No other editions found.</span>'; return; }
+  urls.slice(0, 12).forEach(u => {
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.setAttribute('aria-label', 'Show this edition’s cover larger');
+    const im = document.createElement('img'); im.alt = ''; im.loading = 'lazy'; im.referrerPolicy = 'no-referrer';
+    im.onerror = () => btn.remove();
+    im.onload = () => { if (im.naturalWidth < 40) btn.remove(); };
+    im.src = u;
+    btn.appendChild(im);
+    btn.addEventListener('click', () => { el('lbImg').src = u; });
+    box.appendChild(btn);
+  });
+}
+document.querySelectorAll('.mark').forEach(m => m.addEventListener('click', () => {
+  const k = current + 1;
+  marks[k] = marks[k] === m.dataset.m ? undefined : m.dataset.m;
+  if (!marks[k]) delete marks[k];
+  saveMarks(); applyMark(current); updateTally();
+  document.querySelectorAll('.mark').forEach(x => x.setAttribute('aria-pressed', String(marks[k] === x.dataset.m)));
+}));
+function step(d){
+  let i = current;
+  for (let n = 0; n < BOOKS.length; n++){
+    i = (i + d + BOOKS.length) % BOOKS.length;
+    if (!(document.body.classList.contains('hide-no') && marks[i + 1] === 'no')) break;
+  }
+  openLb(i);
+}
+el('lbPrev').addEventListener('click', () => step(-1));
+el('lbNext').addEventListener('click', () => step(1));
+el('lbClose').addEventListener('click', () => lb.close());
+lb.addEventListener('click', e => { if (e.target === lb) lb.close(); });
+lb.addEventListener('close', () => { const c = cards[current]; if (c) c.focus({preventScroll:false}); });
+document.addEventListener('keydown', e => {
+  if (!lb.open) return;
+  if (e.key === 'ArrowRight') step(1);
+  if (e.key === 'ArrowLeft') step(-1);
+});
+</script>
+</body>
+</html>
