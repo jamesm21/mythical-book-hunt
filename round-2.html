@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Book hunt, round two: sky, stars and light</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Young+Serif&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E8EDF6; --surface:#FFFFFF; --panel:#D8DFEE; --ink:#1B2140; --muted:#55607F;
+  --sun:#F2A900; --sun-ink:#1B2140; --line:#C3CCE0; --focus:#2F5BD3;
+  --serif:"Young Serif", Georgia, "Times New Roman", serif;
+  --sans:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#121831; --surface:#1B2345; --panel:#232C55; --ink:#EDF0FA; --muted:#A3ACCC;
+    --sun:#FFC53D; --sun-ink:#121831; --line:#313C6B; --focus:#8FB0FF;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.45;
+  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:6px}
+
+.wrap{max-width:1320px;margin:0 auto;padding:0 clamp(12px,3vw,32px)}
+
+header.top{display:flex;gap:clamp(14px,3vw,28px);align-items:center;padding:clamp(22px,5vw,48px) 0 clamp(14px,3vw,24px)}
+.sun{width:clamp(56px,10vw,92px);aspect-ratio:1;position:relative;flex:none}
+.sun::before{content:"";position:absolute;inset:0;border-radius:50%;
+  background:repeating-conic-gradient(var(--sun) 0deg 9deg, transparent 9deg 30deg);
+  -webkit-mask:radial-gradient(circle, transparent 0 55%, #000 56%);mask:radial-gradient(circle, transparent 0 55%, #000 56%)}
+.sun::after{content:"";position:absolute;inset:24%;border-radius:50%;background:var(--sun)}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(1.7rem,4.6vw,3rem);line-height:1.08;margin:0 0 .35em;letter-spacing:-.01em}
+.lede{margin:0;color:var(--muted);max-width:62ch;font-size:clamp(.95rem,1.6vw,1.05rem)}
+.lede.back{margin-top:.5em}
+.lede.back a{color:var(--ink);font-weight:700}
+
+.blocked{margin:0 0 18px;padding:14px 16px;border-radius:10px;background:var(--surface);border:2px solid var(--sun);max-width:70ch}
+.blocked p{margin:0}
+.blocked p + p{margin-top:.4em;color:var(--muted);font-size:.92rem}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.bar .wrap{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding-top:10px;padding-bottom:10px}
+.jump{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-weight:700;font-size:.9rem;
+  padding:7px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
+.jump span{color:var(--muted);font-weight:400}
+.spacer{flex:1}
+.tally{font-size:.85rem;color:var(--muted)}
+.toggle{font:inherit;font-size:.85rem;font-weight:700;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:999px;padding:7px 12px;cursor:pointer}
+.toggle[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+section.group{padding:clamp(22px,4vw,36px) 0 8px}
+.group h2{font-family:var(--serif);font-weight:400;font-size:clamp(1.35rem,3vw,1.9rem);margin:0 0 .25em}
+.group > .wrap > p{margin:0 0 18px;color:var(--muted);max-width:66ch}
+
+.grid{display:grid;gap:clamp(14px,2.2vw,26px) clamp(10px,1.8vw,22px);
+  grid-template-columns:repeat(auto-fill,minmax(clamp(104px,28vw,200px),1fr))}
+.card{all:unset;display:flex;flex-direction:column;gap:6px;cursor:pointer;position:relative;min-width:0}
+.card:focus-visible{outline:3px solid var(--focus);outline-offset:4px;border-radius:10px}
+.frame{position:relative;aspect-ratio:3/4;background:var(--panel);border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.frame img{width:100%;height:100%;object-fit:contain;display:block;opacity:0;transition:opacity .35s ease}
+.frame img.ready{opacity:1}
+.frame .ph{position:absolute;inset:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  font-family:var(--serif);font-size:.85rem;color:var(--muted);gap:6px}
+.frame .ph small{font-family:var(--sans);font-size:.72rem}
+.num{position:absolute;top:-8px;left:-8px;min-width:2.1em;height:2.1em;padding:0 .35em;border-radius:999px;
+  background:var(--sun);color:var(--sun-ink);font-weight:700;font-size:.95rem;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 3px var(--bg);z-index:2}
+.t{font-weight:700;font-size:.88rem;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.y{font-size:.8rem;color:var(--muted);margin-top:-3px}
+.card.is-maybe .frame{box-shadow:0 0 0 3px var(--sun)}
+.card.is-no{opacity:.32}
+.card.is-no .t{text-decoration:line-through}
+body.hide-no .card.is-no{display:none}
+
+footer{padding:40px 0 60px;color:var(--muted);font-size:.85rem}
+footer p{max-width:70ch;margin:0 0 .6em}
+
+/* lightbox */
+dialog#lb{border:0;padding:0;background:var(--surface);color:var(--ink);width:min(1040px,100vw);max-width:100vw;max-height:100dvh;border-radius:14px}
+dialog#lb::backdrop{background:rgba(8,12,28,.72)}
+@media (max-width:720px){dialog#lb{width:100vw;height:100dvh;border-radius:0;margin:0}}
+.lb{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(16px,3vw,32px);padding:clamp(16px,3vw,28px);
+  padding-top:calc(env(safe-area-inset-top,0px) + clamp(16px,3vw,28px));padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px)}
+@media (max-width:720px){.lb{grid-template-columns:1fr}}
+.lb-cover{background:var(--panel);border-radius:8px;display:flex;align-items:center;justify-content:center;min-height:260px;max-height:78dvh}
+.lb-cover a{display:flex;width:100%;height:100%;justify-content:center}
+.lb-cover img{max-width:100%;max-height:78dvh;object-fit:contain;display:block}
+.lb-head{display:flex;gap:12px;align-items:flex-start}
+.lb-head .num{position:static;box-shadow:none;flex:none;margin-top:4px}
+.lb h3{font-family:var(--serif);font-weight:400;font-size:clamp(1.35rem,3vw,1.8rem);line-height:1.12;margin:0}
+.lb .sub{margin:.3em 0 0;color:var(--muted)}
+.lb .by{margin:.6em 0 0}
+.lb .why{margin:1em 0 0;max-width:60ch}
+.lb .note{margin:.6em 0 0;font-size:.85rem;color:var(--muted)}
+.marks{display:flex;gap:8px;margin:16px 0 0;flex-wrap:wrap}
+.mark{font:inherit;font-weight:700;font-size:.9rem;padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.mark[aria-pressed="true"][data-m="maybe"]{background:var(--sun);color:var(--sun-ink);border-color:var(--sun)}
+.mark[aria-pressed="true"][data-m="no"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.lb h4{font-size:.95rem;margin:22px 0 8px}
+.eds{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;min-height:20px}
+.eds button{all:unset;cursor:pointer;flex:none;width:64px;aspect-ratio:3/4;background:var(--panel);border-radius:4px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.eds button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.eds img{width:100%;height:100%;object-fit:contain}
+.eds .empty{font-size:.85rem;color:var(--muted)}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.links a{font-size:.88rem;font-weight:700;text-decoration:none;padding:8px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--line)}
+.lb-nav{position:sticky;bottom:0;display:flex;gap:8px;justify-content:space-between;align-items:center;padding:10px clamp(16px,3vw,28px);
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 10px);background:var(--surface);border-top:1px solid var(--line)}
+.lb-nav button{font:inherit;font-weight:700;padding:9px 14px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+@media (prefers-reduced-motion:reduce){.frame img{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="sun" aria-hidden="true"></div>
+    <div>
+      <h1>Round two: sky, stars and light</h1>
+      <p class="lede">Sky, star, Moon and rainbow books, numbered on from round one. Tap a cover for a bigger view, inside pages where available and links to look inside.</p>
+      <p class="lede back"><a href="index.html">Back to round one (1 to 50)</a></p>
+    </div>
+  </header>
+  <div class="blocked" id="blocked" hidden role="status">
+    <p><strong>Covers can’t load in this preview.</strong> It blocks pictures from other websites, so every cover shows as missing.</p>
+    <p>Download the file and open it in Safari, Chrome or Edge, ideally on a computer. The covers will appear there.</p>
+  </div>
+</div>
+
+<nav class="bar" aria-label="Groups">
+  <div class="wrap">
+    <a class="jump" href="#A">Strongest matches <span id="cA"></span></a>
+    <a class="jump" href="#B">Right look <span id="cB"></span></a>
+    <a class="jump" href="#C">Wider net <span id="cC"></span></a>
+    <span class="spacer"></span>
+    <span class="tally" id="tally" aria-live="polite"></span>
+    <button class="toggle" id="hideNo" aria-pressed="false">Hide ‘not it’</button>
+  </div>
+</nav>
+
+<main>
+  <section class="group" id="A">
+    <div class="wrap">
+      <h2>Strongest matches</h2>
+      <p>Sky myths from many cultures, in bold, graphic, colourful styles close to what you described.</p>
+      <div class="grid" data-g="A"></div>
+    </div>
+  </section>
+  <section class="group" id="B">
+    <div class="wrap">
+      <h2>Right look</h2>
+      <p>Matching series, Sun-and-star covers or the right art style. Contents not yet checked against your clues.</p>
+      <div class="grid" data-g="B"></div>
+    </div>
+  </section>
+  <section class="group" id="C">
+    <div class="wrap">
+      <h2>Wider net</h2>
+      <p>Other sky and Moon books with myths in them, including a few single-story picture books.</p>
+      <div class="grid" data-g="C"></div>
+    </div>
+  </section>
+</main>
+
+<div class="wrap">
+  <footer>
+    <p>Covers load from Open Library, Google Books and booksellers. A cover marked as matched by title may show a different edition from the one in the library.</p>
+    <p>Round one’s 50 books, and the ones you’d already ruled out, are left off this page.</p>
+  </footer>
+</div>
+
+<dialog id="lb" aria-labelledby="lbTitle">
+  <div class="lb">
+    <div class="lb-cover"><a id="lbCoverLink" target="_blank" rel="noopener"><img id="lbImg" alt=""></a></div>
+    <div>
+      <div class="lb-head"><span class="num" id="lbNum"></span><h3 id="lbTitle"></h3></div>
+      <p class="sub" id="lbSub"></p>
+      <p class="by" id="lbBy"></p>
+      <p class="why" id="lbWhy"></p>
+      <p class="note" id="lbNote"></p>
+      <div class="marks">
+        <button class="mark" data-m="maybe" aria-pressed="false">Looks familiar</button>
+        <button class="mark" data-m="no" aria-pressed="false">Not it</button>
+      </div>
+      <h4>Inside pages and other covers</h4>
+      <div class="eds" id="lbEds"></div>
+      <h4>Look inside and check the library</h4>
+      <div class="links" id="lbLinks"></div>
+    </div>
+  </div>
+  <div class="lb-nav">
+    <button id="lbPrev" aria-label="Previous book">Previous</button>
+    <button id="lbClose">Close</button>
+    <button id="lbNext" aria-label="Next book">Next</button>
+  </div>
+</dialog>
+
+<script>
+/* g: group, t: title, s: subtitle, by: credits, y: year (null = fill from catalogue), isbn: [preferred, alternatives],
+   look: Google Books queries for books without an ISBN here, ol: Open Library title/author fallback, why: reason it is here */
+const START = 51;
+const BOOKS = [
+  // A: strongest
+  {g:'A', t:'The Sky We Share', s:'Star Stories from Around the World', by:'Laura Knowles, illustrated by Mariana Ruiz Johnson', y:2026, isbn:['9781835872437'],
+   cover:['https://shop.rmg.co.uk/cdn/shop/files/The-sky-we-share-1.jpg?v=1790085923&width=900'],
+   inside:['https://shop.rmg.co.uk/cdn/shop/files/The-sky-we-share-2.jpg?v=1790085922&width=900','https://shop.rmg.co.uk/cdn/shop/files/The-sky-we-share-3.jpg?v=1790085922&width=900'],
+   why:'Confirmed: star stories from every corner of the world, in vibrant, bold and graphic art, with a dark blue night-sky cover full of colourful celestial figures. Templar, October 2026, 30cm hardback. Not yet checked for Bakunawa or leprechauns. Tap the small images below for two inside spreads.'},
+  {g:'A', t:'Over the Rainbow', s:'The Science, Magic and Meaning of Rainbows', by:'Rachael Davis, illustrated by Wenjia Tang', y:2023, isbn:['9781838740870','9781838748579'],
+   why:'Confirmed: a whole section on rainbow myths and legends, plus rare rainbows and other light in the sky. A natural home for the Rainbow Serpent and leprechauns, with bright, graphic art by a Chinese-born illustrator. Not yet checked for Bakunawa.'},
+  {g:'A', t:'Wish Upon a Star', s:'The Science, Magic and Meaning of Stars', by:'Catherine Ard, illustrated by Wenjia Tang', y:2025, isbn:['9781838742102','9781838749071'],
+   cover:['https://images.booksense.com/images/071/749/9781838749071.jpg'],
+   why:'Confirmed: stars, constellations and galaxies alongside the myths and symbolism they’ve inspired around the world. Same series and illustrator as Over the Rainbow.'},
+  {g:'A', t:'Amazing Night Sky Atlas', by:'Nancy Dickmann, illustrated by Andrew Painter', y:2022, isbn:['9781838695125','9781838695132'],
+   why:'Confirmed: eclipses, the zodiac and night-sky legends from around the world, in a large 32cm hardback from Lonely Planet Kids.'},
+  {g:'A', t:'What We See in the Stars', s:'An Illustrated Tour of the Night Sky', by:'Kelsey Oseid', y:2017, isbn:['9780399579530'],
+   why:'Confirmed: myths, history and science of the constellations, the Moon, planets, comets and the northern lights, in hand-painted art.'},
+  {g:'A', t:'The Moon', by:'Hannah Pang, illustrated by Thomas Hegbrook', y:2019, isbn:['9781944530242'],
+   look:['intitle:"The Moon" inauthor:Pang'], ol:{title:'The Moon', author:'Hannah Pang'},
+   why:'Confirmed: Moon myths, gods and goddesses, and legends about tides and eclipses, alongside the science.'},
+  {g:'A', t:'Eclipse', s:'Our Sky’s Most Dazzling Phenomenon', by:'Kelsey Oseid', y:null,
+   look:['intitle:Eclipse inauthor:Oseid'], ol:{title:'Eclipse', author:'Kelsey Oseid'},
+   why:'Confirmed: eclipse myths from many cultures alongside the science. Eclipse stories are where moon-eating dragons like Bakunawa tend to appear.'},
+  {g:'A', t:'Dragons', s:'Meet the Legendary Monsters of Mythology', by:'Cait Stevenson, illustrated by Cinthya Alvarez', y:null, isbn:['9781684494521'],
+   look:['intitle:Dragons inauthor:Stevenson Alvarez'],
+   why:'Confirmed: dragons from around the world, including the dragon constellations in the night sky.'},
+  {g:'A', t:'Through the Night Sky', s:'A Collection of Amazing Adventures Under the Stars', by:'DK', y:null,
+   look:['intitle:"Through the Night Sky"'], ol:{title:'Through the Night Sky'},
+   why:'Confirmed: stories set under the night sky around the world, including eclipses, comets and the northern lights.'},
+  {g:'A', t:'Luna', s:'The Science and Stories of Our Moon', by:'David A. Aguilar', y:2019, isbn:['9781426333224'],
+   why:'Confirmed: Moon creation myths from around the world alongside the science.'},
+  {g:'A', t:'Stories of the Aurora', by:'Joan Marie Galat, illustrated by Lorna Bennett', y:null,
+   look:['intitle:"Stories of the Aurora" inauthor:Galat'], ol:{title:'Stories of the Aurora', author:'Galat'},
+   why:'Confirmed: northern lights beliefs and stories from several cultures, mixed with the science.'},
+  {g:'A', t:'Mythology Land', by:'Quarto', y:2025,
+   look:['intitle:"Mythology Land"'], ol:{title:'Mythology Land'},
+   why:'Confirmed: a large-format gift book of world myths with illustrated maps.'},
+
+  // B: right look
+  {g:'B', t:'Into the Volcano', s:'The Science, Magic and Meaning of Volcanoes', by:'Catherine Ard, illustrated by Wenjia Tang', y:2024, isbn:['9781838741754'],
+   why:'Not a sky book, but the same series, cover design and illustrator as Over the Rainbow and Wish Upon a Star, in case it’s the series look you remember.'},
+  {g:'B', t:'Eye of the Storm', s:'The Science, Magic and Meaning of Storms', by:'Catherine Ard, illustrated by Wenjia Tang', y:2026, isbn:['9781838743628'],
+   look:['intitle:"Eye of the Storm" inauthor:Ard'],
+   why:'Same series and illustrator, published 2026, covering storms and the myths around thunder and lightning.'},
+  {g:'B', t:'Kingdom of the Sun', s:'A Book of the Planets', by:'Jacqueline Mitton, illustrated by Christina Balit', y:null,
+   look:['intitle:"Kingdom of the Sun" inauthor:Mitton'], ol:{title:'Kingdom of the Sun', author:'Mitton'},
+   why:'A big golden Sun in the middle of the cover, with bold, decorative, patterned art. Mostly classical myths.'},
+  {g:'B', t:'Zoo in the Sky', s:'A Book of Animal Constellations', by:'Jacqueline Mitton, illustrated by Christina Balit', y:null,
+   look:['intitle:"Zoo in the Sky" inauthor:Mitton'], ol:{title:'Zoo in the Sky', author:'Mitton'},
+   why:'Animal constellations, including a dragon, in rich decorative art with gold.'},
+  {g:'B', t:'Once Upon a Starry Night', s:'A Book of Constellations', by:'Jacqueline Mitton, illustrated by Christina Balit', y:null,
+   look:['intitle:"Once Upon a Starry Night" inauthor:Mitton'], ol:{title:'Once Upon a Starry Night', author:'Mitton'},
+   why:'Myths behind the constellations in the same bold, decorative style.'},
+  {g:'B', t:'Stories in the Stars', s:'An Atlas of Constellations', by:'Susanna Hislop, illustrated by Hannah Waldron', y:null,
+   look:['intitle:"Stories in the Stars" inauthor:Hislop'], ol:{title:'Stories in the Stars', author:'Hislop'},
+   why:'Constellation stories with flat, bold, patterned, almost textile-like art.'},
+  {g:'B', t:'Star Seeker', s:'A Journey to Outer Space', by:'Theresa Heine, illustrated by Victor Tavares', y:null,
+   look:['intitle:"Star Seeker" inauthor:Heine'], ol:{title:'Star Seeker', author:'Theresa Heine'},
+   why:'Bright, bold, patterned sky and constellation art from Barefoot Books.'},
+  {g:'B', t:'Luna and the Sky Dragon', by:'Bethan Woollvin', y:null,
+   look:['intitle:"Luna and the Sky Dragon"'], ol:{title:'Luna and the Sky Dragon', author:'Woollvin'},
+   why:'Picture book about a feared Sky Dragon and a disappearing Moon, in bold, graphic, cartoon-like art.'},
+  {g:'B', t:'Good Night, Earth', s:'5-Minute Stories About Nature After Dark', by:'Lonely Planet Kids, illustrated by Ester Gouw', y:2025,
+   look:['intitle:"Good Night, Earth" Lonely Planet'], ol:{title:'Good Night Earth'},
+   why:'25 night-time stories from around the world, including moonbows, constellations and the midnight sky.'},
+  {g:'B', t:'Planetarium', by:'Raman Prinja, illustrated by Chris Wormell', y:null,
+   look:['intitle:Planetarium inauthor:Prinja'], ol:{title:'Planetarium', author:'Raman Prinja'},
+   why:'Large-format sky book from the Welcome to the Museum series, with a striking Sun-and-planets look.'},
+  {g:'B', t:'The Mysteries of the Universe', by:'Will Gater, illustrated by Angela Rizza', y:2020,
+   look:['intitle:"Mysteries of the Universe" inauthor:Gater'], ol:{title:'The Mysteries of the Universe', author:'Will Gater'},
+   why:'Big DK anthology of the night sky and space, one wonder per page.'},
+  {g:'B', t:'An Anthology of Stargazing', by:'DK', y:2025,
+   look:['intitle:"Anthology of Stargazing"'], ol:{title:'An Anthology of Stargazing'},
+   why:'DK collection of stars and constellations.'},
+  {g:'B', t:'Animals in the Sky', by:'Sara Gillingham', y:null,
+   look:['intitle:"Animals in the Sky" inauthor:Gillingham'], ol:{title:'Animals in the Sky', author:'Gillingham'},
+   why:'Animal constellations in bold, flat, graphic shapes.'},
+
+  // C: wider net
+  {g:'C', t:'A Child’s Introduction to the Night Sky', by:'Michael Driscoll, illustrated by Meredith Hamilton', y:null,
+   look:['intitle:"Introduction to the Night Sky" inauthor:Driscoll'], ol:{title:'A Child\'s Introduction to the Night Sky', author:'Driscoll'},
+   why:'Constellation myths, astronomy and a star wheel, with cartoon-style illustration.'},
+  {g:'C', t:'Sky Gazing', s:'A Guide to the Moon, Sun, Planets, Stars, Eclipses, and Constellations', by:'Meg Thacher', y:null,
+   look:['intitle:"Sky Gazing" inauthor:Thacher'], ol:{title:'Sky Gazing', author:'Meg Thacher'},
+   why:'Sky guide for older children with some cultural lore.'},
+  {g:'C', t:'Moontellers', s:'Myths of the Moon from Around the World', by:'Lynn Moroney', y:1995, isbn:['9780873586016'],
+   look:['intitle:Moontellers'],
+   why:'Older, but a colourfully illustrated collection of Moon myths from around the world.'},
+  {g:'C', t:'Stories of the Moon', by:'Joan Marie Galat', y:null,
+   look:['intitle:"Stories of the Moon" inauthor:Galat'], ol:{title:'Stories of the Moon', author:'Galat'},
+   why:'Moon myths from several cultures with the science, from the same series as Stories of the Aurora.'},
+  {g:'C', t:'The Moon Rabbit', s:'A Celebration of the Mid-Autumn Festival', by:'Eva Wong Nava, illustrated by Jason Chuang', y:2025, isbn:['9781529513240','9781536238914'],
+   why:'A single Chinese story rather than a collection, but it has the nine suns, the archer and the Moon goddess.'},
+  {g:'C', t:'Little Myths: Chang’e', by:'Eliza Chan, illustrated by Gui Yingzhu Xue', y:2026, isbn:['9781444934663'],
+   why:'Single Chinese Moon myth with graphic art panels and facts, published 2026.'}
+];
+
+const LS_KEY = 'mythhunt-marks-v1';
+let marks = {};
+try { marks = JSON.parse(localStorage.getItem(LS_KEY) || '{}') || {}; } catch (e) { marks = {}; }
+function saveMarks(){ try { localStorage.setItem(LS_KEY, JSON.stringify(marks)); } catch (e) {} }
+
+const state = BOOKS.map(() => ({src:null, year:null, gbId:null, isbn:null, byTitle:false, started:false, done:false}));
+const cards = [];
+
+/* small request queue so we stay polite to the catalogues */
+const queue = []; let active = 0; const MAX = 3;
+function enqueue(fn){
+  return new Promise(resolve => {
+    queue.push(() => Promise.resolve().then(fn).then(resolve, () => resolve(null)));
+    pump();
+  });
+}
+function pump(){
+  while (active < MAX && queue.length){
+    const job = queue.shift(); active++;
+    job().finally(() => { active--; pump(); });
+  }
+}
+
+function loadImage(url){
+  return new Promise(resolve => {
+    const img = new Image();
+    img.referrerPolicy = 'no-referrer';
+    let settled = false;
+    const done = ok => { if (!settled){ settled = true; resolve(ok); } };
+    img.onload = () => done(img.naturalWidth > 60 && img.naturalHeight > 60);
+    img.onerror = () => done(false);
+    setTimeout(() => done(false), 12000);
+    img.src = url;
+  });
+}
+const isbnSources = i => [
+  `https://covers.openlibrary.org/b/isbn/${i}-L.jpg?default=false`,
+  `https://cdn.theportobellobookshop.com/img/${i}.jpg`,
+  `https://images.booksense.com/images/${i.slice(10)}/${i.slice(7,10)}/${i}.jpg`,
+  `https://images-us.bookshop.org/ingram/${i}.jpg`
+];
+async function gbSearch(q){
+  try {
+    const r = await fetch('https://www.googleapis.com/books/v1/volumes?maxResults=8&printType=books&q=' + encodeURIComponent(q));
+    if (!r.ok) return [];
+    const j = await r.json();
+    return j.items || [];
+  } catch (e) { return []; }
+}
+function gbCoverUrls(item){
+  const links = item && item.volumeInfo && item.volumeInfo.imageLinks;
+  if (!links) return [];
+  const thumb = (links.thumbnail || links.smallThumbnail || '').replace('http:', 'https:').replace('&edge=curl', '');
+  return [`https://books.google.com/books/publisher/content/images/frontcover/${item.id}?fife=w600-h900&source=gbs_api`, thumb].filter(Boolean);
+}
+async function olSearch(title, author){
+  try {
+    let u = 'https://openlibrary.org/search.json?limit=8&fields=key,title,author_name,cover_i,first_publish_year&title=' + encodeURIComponent(title);
+    if (author) u += '&author=' + encodeURIComponent(author);
+    const r = await fetch(u);
+    if (!r.ok) return [];
+    const j = await r.json();
+    return j.docs || [];
+  } catch (e) { return []; }
+}
+function leadAuthor(b){
+  if (b.ol && b.ol.author) return b.ol.author;
+  const first = (b.by || '').split(',')[0].trim();
+  if (/^(illustrated by|dk$|arcturus|wide eyed|white star|lonely planet|shine-a-light|quarto)/i.test(first)) return '';
+  return first.split(' and ')[0];
+}
+
+async function resolveBook(i){
+  const b = BOOKS[i], s = state[i];
+  if (s.started) return; s.started = true;
+  if (b.cover){
+    for (const u of b.cover){ if (await loadImage(u)){ s.src = u; break; } }
+  }
+  if (b.isbn) s.isbn = b.isbn[0];
+  if (b.isbn && !s.src){
+    outer: for (const code of b.isbn){
+      for (const u of isbnSources(code)){
+        if (await loadImage(u)){ s.src = u; break outer; }
+      }
+    }
+  }
+  if (!s.src || !b.y){
+    const queries = [];
+    if (b.isbn) b.isbn.forEach(code => queries.push('isbn:' + code));
+    if (b.look) queries.push(...b.look);
+    for (const q of queries){
+      const items = await gbSearch(q);
+      const item = items.find(x => x.volumeInfo && x.volumeInfo.imageLinks) || items[0];
+      if (!item) continue;
+      const vi = item.volumeInfo || {};
+      if (!s.gbId) s.gbId = item.id;
+      if (!b.y && !s.year && vi.publishedDate) s.year = vi.publishedDate.slice(0, 4);
+      if (!s.isbn && vi.industryIdentifiers){
+        const id13 = vi.industryIdentifiers.find(x => x.type === 'ISBN_13');
+        if (id13) s.isbn = id13.identifier;
+      }
+      if (!s.src){
+        for (const u of gbCoverUrls(item)){
+          if (await loadImage(u)){ s.src = u; s.byTitle = !q.startsWith('isbn:'); break; }
+        }
+      }
+      if (s.src) break;
+    }
+  }
+  if (!s.src){
+    const title = (b.ol && b.ol.title) || b.t;
+    const docs = await olSearch(title, leadAuthor(b));
+    const d = docs.find(x => x.cover_i);
+    if (d){
+      const u = `https://covers.openlibrary.org/b/id/${d.cover_i}-L.jpg`;
+      if (await loadImage(u)){ s.src = u; s.byTitle = true; }
+      if (!b.y && !s.year && d.first_publish_year) s.year = String(d.first_publish_year);
+    }
+  }
+  s.done = true;
+  paintCard(i);
+}
+
+function yearOf(i){ return BOOKS[i].y || state[i].year || ''; }
+
+function paintCard(i){
+  const card = cards[i]; if (!card) return;
+  const s = state[i], b = BOOKS[i];
+  const frame = card.querySelector('.frame');
+  const ph = frame.querySelector('.ph');
+  const y = card.querySelector('.y');
+  y.textContent = yearOf(i);
+  if (s.src){
+    let img = frame.querySelector('img');
+    if (!img){
+      img = document.createElement('img');
+      img.alt = '';
+      img.referrerPolicy = 'no-referrer';
+      img.decoding = 'async';
+      frame.prepend(img);
+    }
+    img.onload = () => { img.classList.add('ready'); if (ph) ph.hidden = true; };
+    img.src = s.src;
+  } else if (s.done && ph){
+    ph.innerHTML = '';
+    const t = document.createElement('span'); t.textContent = b.t;
+    const sm = document.createElement('small'); sm.textContent = blocked ? 'Can’t load covers here' : 'No cover found. Tap for links.';
+    ph.append(t, sm);
+  }
+  applyMark(i);
+}
+
+function applyMark(i){
+  const card = cards[i]; if (!card) return;
+  card.classList.toggle('is-maybe', marks[i + START] === 'maybe');
+  card.classList.toggle('is-no', marks[i + START] === 'no');
+}
+function updateTally(){
+  const vals = Object.entries(marks).filter(([k]) => +k >= START && +k < START + BOOKS.length).map(([, v]) => v);
+  const m = vals.filter(v => v === 'maybe').length, n = vals.filter(v => v === 'no').length;
+  document.getElementById('tally').textContent = (m || n) ? `${m} familiar, ${n} not it` : '';
+}
+
+/* build grid */
+const counts = {A:0, B:0, C:0};
+BOOKS.forEach((b, i) => {
+  counts[b.g]++;
+  const card = document.createElement('button');
+  card.className = 'card';
+  card.type = 'button';
+  card.setAttribute('aria-label', `${i + START}: ${b.t}`);
+  card.innerHTML = `<span class="frame"><span class="ph"><span></span></span><span class="num">${i + START}</span></span><span class="t"></span><span class="y"></span>`;
+  card.querySelector('.ph span').textContent = b.t;
+  card.querySelector('.t').textContent = b.t;
+  card.querySelector('.y').textContent = b.y || '';
+  card.addEventListener('click', () => openLb(i));
+  document.querySelector(`.grid[data-g="${b.g}"]`).appendChild(card);
+  cards[i] = card;
+  applyMark(i);
+});
+['A','B','C'].forEach(g => document.getElementById('c' + g).textContent = counts[g]);
+updateTally();
+
+let blocked = false;
+async function probe(){
+  const tests = await Promise.all([
+    loadImage('https://covers.openlibrary.org/b/isbn/9781405297783-M.jpg'),
+    loadImage('https://books.google.com/books/content?vid=ISBN9781405297783&printsec=frontcover&img=1&zoom=1'),
+    fetch('https://openlibrary.org/search.json?q=night+sky&limit=1&fields=key').then(r => r.ok, () => false)
+  ]);
+  return tests.some(Boolean);
+}
+const io = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting){
+      const i = cards.indexOf(e.target);
+      io.unobserve(e.target);
+      enqueue(() => resolveBook(i));
+    }
+  });
+}, {rootMargin:'800px 0px'}) : null;
+probe().then(ok => {
+  if (!ok){
+    blocked = true;
+    document.getElementById('blocked').hidden = false;
+    BOOKS.forEach((b, i) => { state[i].started = true; state[i].done = true; paintCard(i); });
+    return;
+  }
+  cards.forEach((c, i) => io ? io.observe(c) : enqueue(() => resolveBook(i)));
+});
+
+/* hide toggle */
+const hideBtn = document.getElementById('hideNo');
+hideBtn.addEventListener('click', () => {
+  const on = hideBtn.getAttribute('aria-pressed') !== 'true';
+  hideBtn.setAttribute('aria-pressed', String(on));
+  document.body.classList.toggle('hide-no', on);
+});
+
+/* lightbox */
+const lb = document.getElementById('lb');
+let current = 0;
+function el(id){ return document.getElementById(id); }
+function linkBtn(label, href){
+  const a = document.createElement('a'); a.textContent = label; a.href = href; a.target = '_blank'; a.rel = 'noopener'; return a;
+}
+async function openLb(i){
+  current = i;
+  const b = BOOKS[i], s = state[i];
+  if (!s.started) enqueue(() => resolveBook(i));
+  el('lbNum').textContent = i + START;
+  el('lbTitle').textContent = b.t;
+  el('lbSub').textContent = b.s || '';
+  el('lbSub').hidden = !b.s;
+  el('lbBy').textContent = [b.by, yearOf(i)].filter(Boolean).join(', ');
+  el('lbWhy').textContent = b.why;
+  el('lbNote').textContent = s.byTitle ? 'Cover matched by title, so it may show a different edition.' : '';
+  const img = el('lbImg');
+  img.removeAttribute('src');
+  img.alt = `Cover of ${b.t}`;
+  if (s.src) img.src = s.src;
+  const isbn = s.isbn || (b.isbn && b.isbn[0]) || '';
+  const gbLink = s.gbId ? `https://books.google.co.uk/books?id=${s.gbId}` :
+    isbn ? `https://books.google.co.uk/books?vid=ISBN${isbn}` :
+    `https://www.google.co.uk/search?tbm=bks&q=${encodeURIComponent('"' + b.t + '"')}`;
+  el('lbCoverLink').href = gbLink;
+  const illus = (b.by || '').match(/illustrated by ([^,]+)/i);
+  const key = isbn || b.t;
+  const links = el('lbLinks'); links.innerHTML = '';
+  links.append(
+    linkBtn('Look inside on Google Books', gbLink),
+    linkBtn('Find inside pages', `https://www.google.co.uk/search?tbm=isch&q=${encodeURIComponent('"' + b.t + '" ' + (illus ? illus[1] : '') + ' spread')}`),
+    linkBtn('Check LibrariesWest', `https://librarieswest.ent.sirsidynix.net.uk/client/en_GB/default/search/results?qu=${encodeURIComponent(key)}`),
+    linkBtn('Open Library', isbn ? `https://openlibrary.org/isbn/${isbn}` : `https://openlibrary.org/search?q=${encodeURIComponent(b.t)}`),
+    linkBtn('Bookshop.org', `https://uk.bookshop.org/search?keywords=${encodeURIComponent(key)}`)
+  );
+  document.querySelectorAll('.mark').forEach(m => m.setAttribute('aria-pressed', String(marks[i + START] === m.dataset.m)));
+  if (!lb.open) lb.showModal();
+  lb.scrollTop = 0;
+  loadEditions(i);
+}
+async function loadEditions(i){
+  const box = el('lbEds');
+  box.innerHTML = '<span class="empty">Looking for other editions…</span>';
+  const b = BOOKS[i];
+  const seen = new Set(); const urls = [...(b.inside || [])];
+  const title = (b.ol && b.ol.title) || b.t;
+  const docs = await olSearch(title, leadAuthor(b));
+  const work = docs.find(d => d.key);
+  if (work){
+    try {
+      const r = await fetch(`https://openlibrary.org${work.key}/editions.json?limit=50`);
+      if (r.ok){
+        const j = await r.json();
+        (j.entries || []).forEach(e => {
+          const c = e.covers && e.covers.find(x => x > 0);
+          if (c && !seen.has('ol' + c)){ seen.add('ol' + c); urls.push(`https://covers.openlibrary.org/b/id/${c}-L.jpg`); }
+        });
+      }
+    } catch (e) {}
+  }
+  const author = leadAuthor(b);
+  const items = await gbSearch(`intitle:"${b.t}"` + (author ? ` inauthor:"${author.split(' ').pop()}"` : ''));
+  items.slice(0, 6).forEach(it => {
+    const u = gbCoverUrls(it)[1];
+    if (u && !seen.has('gb' + it.id)){ seen.add('gb' + it.id); urls.push(u.replace('zoom=1', 'zoom=2')); }
+  });
+  if (current !== i) return;
+  box.innerHTML = '';
+  if (!urls.length){ box.innerHTML = '<span class="empty">No other editions found.</span>'; return; }
+  urls.slice(0, 12).forEach(u => {
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.setAttribute('aria-label', 'Show this picture larger');
+    const im = document.createElement('img'); im.alt = ''; im.loading = 'lazy'; im.referrerPolicy = 'no-referrer';
+    im.onerror = () => btn.remove();
+    im.onload = () => { if (im.naturalWidth < 40) btn.remove(); };
+    im.src = u;
+    btn.appendChild(im);
+    btn.addEventListener('click', () => { el('lbImg').src = u; });
+    box.appendChild(btn);
+  });
+}
+document.querySelectorAll('.mark').forEach(m => m.addEventListener('click', () => {
+  const k = current + START;
+  marks[k] = marks[k] === m.dataset.m ? undefined : m.dataset.m;
+  if (!marks[k]) delete marks[k];
+  saveMarks(); applyMark(current); updateTally();
+  document.querySelectorAll('.mark').forEach(x => x.setAttribute('aria-pressed', String(marks[k] === x.dataset.m)));
+}));
+function step(d){
+  let i = current;
+  for (let n = 0; n < BOOKS.length; n++){
+    i = (i + d + BOOKS.length) % BOOKS.length;
+    if (!(document.body.classList.contains('hide-no') && marks[i + START] === 'no')) break;
+  }
+  openLb(i);
+}
+el('lbPrev').addEventListener('click', () => step(-1));
+el('lbNext').addEventListener('click', () => step(1));
+el('lbClose').addEventListener('click', () => lb.close());
+lb.addEventListener('click', e => { if (e.target === lb) lb.close(); });
+lb.addEventListener('close', () => { const c = cards[current]; if (c) c.focus({preventScroll:false}); });
+document.addEventListener('keydown', e => {
+  if (!lb.open) return;
+  if (e.key === 'ArrowRight') step(1);
+  if (e.key === 'ArrowLeft') step(-1);
+});
+</script>
+</body>
+</html>
